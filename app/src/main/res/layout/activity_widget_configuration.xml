@@ -24,24 +24,13 @@
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_secondary" />
 
-        <Switch
-            android:id="@+id/startOnSundaySwitch"
+        <TextView
+            android:id="@+id/statusView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="@string/widget_start_on_sunday"
+            android:text="@string/widget_empty_status"
             android:textColor="@color/text_primary" />
-
-        <ImageView
-            android:id="@+id/previewGraph"
-            android:layout_width="match_parent"
-            android:layout_height="160dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/widget_background"
-            android:contentDescription="@string/widget_graph_content_description"
-            android:padding="6dp"
-            android:scaleType="centerInside" />
 
         <Button
             android:id="@+id/saveButton"

@@ -5,9 +5,10 @@
     <string name="widget_description">Resizable GitHub contribution graph</string>
     <string name="widget_handle_hint">GitHub handle</string>
     <string name="widget_save">Save</string>
-    <string name="widget_start_on_sunday">Start week on Sunday</string>
+    <string name="widget_idle_status">Save to verify</string>
     <string name="widget_empty_status">Type a handle</string>
     <string name="widget_loading_status">Refreshing...</string>
+    <string name="widget_handle_missing">Not found</string>
     <string name="widget_error_status">Unable to load</string>
     <string name="widget_graph_content_description">Contribution graph</string>
 </resources>
