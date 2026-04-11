@@ -2,7 +2,7 @@
 
 ![](./preview.webp)
 
-**g**ithub **s**taus widget for android.
+**g**ithub **c**ontribution widget for android.
 
 ## Why
 
