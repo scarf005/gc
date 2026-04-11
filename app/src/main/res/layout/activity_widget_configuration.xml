@@ -24,7 +24,7 @@
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_secondary" />
 
-        <androidx.appcompat.widget.SwitchCompat
+        <Switch
             android:id="@+id/startOnSundaySwitch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
             android:padding="6dp"
             android:scaleType="centerInside" />
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/saveButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -7,6 +7,10 @@ android {
     namespace = "dev.scarf.gc"
     compileSdk = 35
 
+    buildFeatures {
+        buildConfig = false
+    }
+
     defaultConfig {
         applicationId = "dev.scarf.gc"
         minSdk = 26
@@ -19,7 +23,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -38,12 +42,5 @@ android {
 }
 
 dependencies {
-    implementation("androidx.activity:activity-ktx:1.9.3")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-
     testImplementation("junit:junit:4.13.2")
 }

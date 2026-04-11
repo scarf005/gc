@@ -1,17 +1,16 @@
 package dev.scarf.gc
 
+import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.button.MaterialButton
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val pinButton: MaterialButton = findViewById(R.id.pinWidgetButton)
+        val pinButton: android.widget.Button = findViewById(R.id.pinWidgetButton)
         val appWidgetManager = AppWidgetManager.getInstance(this)
 
         pinButton.isEnabled = appWidgetManager.isRequestPinAppWidgetSupported

@@ -4,11 +4,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 internal object ContributionRepository {
-    suspend fun fetch(handle: String): Result<ContributionStats> = withContext(Dispatchers.IO) {
+    fun fetch(handle: String): Result<ContributionStats> =
         runCatching {
             val normalizedHandle = normalizeHandle(handle)
             require(normalizedHandle.isNotBlank()) { "Type a handle" }
@@ -41,5 +39,4 @@ internal object ContributionRepository {
                 connection.disconnect()
             }
         }
-    }
 }

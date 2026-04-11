@@ -4,9 +4,6 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class ContributionWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -16,7 +13,7 @@ class ContributionWidgetProvider : AppWidgetProvider() {
             ACTION_MANUAL_REFRESH -> {
                 val pendingResult = goAsync()
                 val appWidgetIds = resolveWidgetIds(context, intent)
-                CoroutineScope(Dispatchers.IO).launch {
+                AppRuntime.io.execute {
                     runCatching {
                         appWidgetIds.forEach { appWidgetId ->
                             ContributionWidgetUpdater.refreshStored(context, appWidgetId)

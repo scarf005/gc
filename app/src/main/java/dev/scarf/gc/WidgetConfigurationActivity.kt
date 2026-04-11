@@ -1,21 +1,19 @@
 package dev.scarf.gc
 
+import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.widget.SwitchCompat
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.lifecycleScope
-import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import android.widget.Switch
 import kotlin.math.max
 
-class WidgetConfigurationActivity : AppCompatActivity() {
+class WidgetConfigurationActivity : Activity() {
     private data class PreviewSize(
         val widthPx: Int,
         val heightPx: Int,
@@ -25,10 +23,14 @@ class WidgetConfigurationActivity : AppCompatActivity() {
 
     private lateinit var handleInput: EditText
     private lateinit var previewGraph: ImageView
-    private lateinit var startOnSundaySwitch: SwitchCompat
-    private lateinit var saveButton: MaterialButton
+    private lateinit var startOnSundaySwitch: Switch
+    private lateinit var saveButton: Button
 
-    private var refreshJob: Job? = null
+    private val refreshHandler = AppRuntime.main
+    private var refreshToken = 0
+    private val refreshRunnable = Runnable {
+        refreshPreview(handleInput.text.toString(), ++refreshToken)
+    }
 
     private val appWidgetId: Int by lazy {
         intent?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
@@ -56,11 +58,17 @@ class WidgetConfigurationActivity : AppCompatActivity() {
         handleInput.setText(savedHandle)
         handleInput.setSelection(savedHandle.length)
         startOnSundaySwitch.isChecked = savedStartOnSunday
-        handleInput.doAfterTextChanged { text ->
-            queueRefresh(text?.toString().orEmpty())
-        }
+        handleInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+
+            override fun afterTextChanged(s: Editable?) {
+                queueRefresh()
+            }
+        })
         startOnSundaySwitch.setOnCheckedChangeListener { _, _ ->
-            queueRefresh(handleInput.text.toString())
+            queueRefresh()
         }
 
         saveButton.setOnClickListener {
@@ -76,24 +84,21 @@ class WidgetConfigurationActivity : AppCompatActivity() {
         }
 
         previewGraph.post {
-            queueRefresh(savedHandle)
+            queueRefresh()
         }
     }
 
     override fun onDestroy() {
-        refreshJob?.cancel()
+        refreshHandler.removeCallbacks(refreshRunnable)
         super.onDestroy()
     }
 
-    private fun queueRefresh(rawHandle: String) {
-        refreshJob?.cancel()
-        refreshJob = lifecycleScope.launch {
-            delay(450)
-            refreshPreview(rawHandle)
-        }
+    private fun queueRefresh() {
+        refreshHandler.removeCallbacks(refreshRunnable)
+        refreshHandler.postDelayed(refreshRunnable, 450)
     }
 
-    private suspend fun refreshPreview(rawHandle: String) {
+    private fun refreshPreview(rawHandle: String, token: Int) {
         val handle = normalizeHandle(rawHandle)
         val previewSize = previewSize()
         if (handle.isBlank()) {
@@ -112,42 +117,46 @@ class WidgetConfigurationActivity : AppCompatActivity() {
             return
         }
 
-        ContributionRepository.fetch(handle)
-            .onSuccess { stats ->
-                if (handle != normalizeHandle(handleInput.text.toString())) {
-                    return@onSuccess
+        AppRuntime.io.execute {
+            val result = ContributionRepository.fetch(handle)
+            refreshHandler.post {
+                if (isFinishing || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed)) {
+                    return@post
                 }
-                previewGraph.setImageBitmap(
-                    ContributionBitmapRenderer.render(
-                        stats = stats,
-                        options = ContributionBitmapRenderer.RenderOptions(
-                            widthPx = previewSize.widthPx,
-                            heightPx = previewSize.heightPx,
-                            columns = previewSize.columns,
-                            weekBlocks = previewSize.weekBlocks,
-                            startOnSunday = startOnSundaySwitch.isChecked,
-                        ),
-                    ),
-                )
-                ContributionWidgetUpdater.showContent(this, appWidgetId, stats)
-            }
-            .onFailure { throwable ->
-                if (handle != normalizeHandle(handleInput.text.toString())) {
-                    return@onFailure
+                if (token != refreshToken || handle != normalizeHandle(handleInput.text.toString())) {
+                    return@post
                 }
-                previewGraph.setImageBitmap(
-                    ContributionBitmapRenderer.placeholder(
-                        options = ContributionBitmapRenderer.RenderOptions(
-                            widthPx = previewSize.widthPx,
-                            heightPx = previewSize.heightPx,
-                            columns = previewSize.columns,
-                            weekBlocks = previewSize.weekBlocks,
-                            startOnSunday = startOnSundaySwitch.isChecked,
+
+                result.onSuccess { stats ->
+                    previewGraph.setImageBitmap(
+                        ContributionBitmapRenderer.render(
+                            stats = stats,
+                            options = ContributionBitmapRenderer.RenderOptions(
+                                widthPx = previewSize.widthPx,
+                                heightPx = previewSize.heightPx,
+                                columns = previewSize.columns,
+                                weekBlocks = previewSize.weekBlocks,
+                                startOnSunday = startOnSundaySwitch.isChecked,
+                            ),
                         ),
-                    ),
-                )
-                ContributionWidgetUpdater.showError(this, appWidgetId)
+                    )
+                    ContributionWidgetUpdater.showContent(this, appWidgetId, stats)
+                }.onFailure {
+                    previewGraph.setImageBitmap(
+                        ContributionBitmapRenderer.placeholder(
+                            options = ContributionBitmapRenderer.RenderOptions(
+                                widthPx = previewSize.widthPx,
+                                heightPx = previewSize.heightPx,
+                                columns = previewSize.columns,
+                                weekBlocks = previewSize.weekBlocks,
+                                startOnSunday = startOnSundaySwitch.isChecked,
+                            ),
+                        ),
+                    )
+                    ContributionWidgetUpdater.showError(this, appWidgetId)
+                }
             }
+        }
     }
 
     private fun previewSize(): PreviewSize {

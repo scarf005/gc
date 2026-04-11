@@ -13,7 +13,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 internal object ContributionWidgetUpdater {
-    suspend fun refreshStored(context: Context, appWidgetId: Int): Result<ContributionStats> {
+    fun refreshStored(context: Context, appWidgetId: Int): Result<ContributionStats> {
         val handle = WidgetPreferences.readHandle(context, appWidgetId)
         if (handle.isBlank()) {
             showPlaceholder(context, appWidgetId)
@@ -24,7 +24,7 @@ internal object ContributionWidgetUpdater {
             .onSuccess { stats ->
                 showContent(context, appWidgetId, stats)
             }
-            .onFailure { throwable ->
+            .onFailure {
                 showError(context, appWidgetId)
             }
     }
