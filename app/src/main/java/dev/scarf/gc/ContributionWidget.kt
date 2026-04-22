@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.widget.RemoteViews
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -17,18 +18,22 @@ import kotlin.math.roundToInt
 private const val prefsName = "contribution_widget"
 private const val actionRefresh = "dev.scarf.gc.MANUAL_REFRESH"
 private const val graphPaddingDp = 6
+private const val logTag = "ContributionWidget"
 internal val io = Executors.newSingleThreadExecutor()
 private fun prefs(context: Context) = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
 
 internal object WidgetPreferences {
     fun readHandle(context: Context, id: Int) = prefs(context).getString("handle_$id", "").orEmpty()
     fun writeHandle(context: Context, id: Int, handle: String) = prefs(context).edit().putString("handle_$id", normalizeHandle(handle)).apply()
-    fun clear(context: Context, id: Int) = prefs(context).edit().remove("handle_$id").apply()
+    fun readStats(context: Context, id: Int) = prefs(context).getString("stats_$id", "")?.let(::decodeContributionStats)
+    fun writeStats(context: Context, id: Int, stats: ContributionStats) = prefs(context).edit().putString("stats_$id", encodeContributionStats(stats)).apply()
+    fun clear(context: Context, id: Int) = prefs(context).edit().remove("handle_$id").remove("stats_$id").apply()
 }
 
 class ContributionWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action !in arrayOf(AppWidgetManager.ACTION_APPWIDGET_UPDATE, AppWidgetManager.ACTION_APPWIDGET_OPTIONS_CHANGED, actionRefresh)) return super.onReceive(context, intent)
+        if (intent.action !in arrayOf(AppWidgetManager.ACTION_APPWIDGET_UPDATE, AppWidgetManager.ACTION_APPWIDGET_OPTIONS_CHANGED, actionRefresh, Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED)) return super.onReceive(context, intent)
+        Log.d(logTag, "onReceive action=${intent.action} ids=${widgetIds(context, intent).joinToString()}")
         val pending = goAsync(); io.execute { widgetIds(context, intent).forEach { ContributionWidgetUpdater.refreshStored(context, it) }; pending.finish() }
     }
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) = Unit
@@ -43,7 +48,26 @@ internal object ContributionWidgetUpdater {
     fun refreshStored(context: Context, appWidgetId: Int): Result<ContributionStats> {
         val handle = WidgetPreferences.readHandle(context, appWidgetId)
         if (handle.isBlank()) return Result.success(emptyContributionStats()).also { show(context, appWidgetId) }
-        return ContributionRepository.fetch(handle).onSuccess { show(context, appWidgetId, it) }.onFailure { show(context, appWidgetId) }
+        val cached = WidgetPreferences.readStats(context, appWidgetId)
+        cached?.also {
+            Log.d(logTag, "restore cached widget=$appWidgetId handle=$handle end=${it.endDate}")
+            show(context, appWidgetId, it)
+        }
+        val result = ContributionRepository.fetch(handle)
+        return result.onSuccess {
+            if (shouldUseFetchedStats(it, cached)) {
+                WidgetPreferences.writeStats(context, appWidgetId, it)
+                Log.d(logTag, "refresh ok widget=$appWidgetId handle=$handle cached=true")
+                show(context, appWidgetId, it)
+            } else {
+                Log.w(logTag, "refresh suspicious-empty widget=$appWidgetId handle=$handle keeping cached graph")
+                cached?.let { stats -> show(context, appWidgetId, stats) }
+            }
+        }.onFailure {
+            val displayed = displayedContributionStats(result, cached)
+            Log.w(logTag, "refresh failed widget=$appWidgetId handle=$handle cached=${cached != null} message=${it.message}", it)
+            displayed?.let { stats -> show(context, appWidgetId, stats) }
+        }
     }
 
     fun allWidgetIds(context: Context): IntArray = AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, ContributionWidgetProvider::class.java))

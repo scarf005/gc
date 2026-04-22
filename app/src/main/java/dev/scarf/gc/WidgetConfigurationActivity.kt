@@ -42,6 +42,7 @@ class WidgetConfigurationActivity : Activity() {
                 if (isFinishing) return@runOnUiThread
                 result.onSuccess {
                     WidgetPreferences.writeHandle(this, appWidgetId, handle)
+                    WidgetPreferences.writeStats(this, appWidgetId, it)
                     ContributionWidgetProvider.requestRefresh(this, appWidgetId)
                     setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId))
                     finish()
