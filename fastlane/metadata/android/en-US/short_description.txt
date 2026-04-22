@@ -1,1 +1,1 @@
-GitHub contribution graph widget for Android
+GitHub Contribution graph widget

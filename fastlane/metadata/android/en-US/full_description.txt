@@ -1,8 +1,1 @@
-gc is a small Android home screen widget for viewing a GitHub
-contribution graph.
-
-Enter a GitHub handle, pin the widget, and the graph is rendered on the
-home screen in a compact resizable layout.
-
-The app fetches contribution data from github.com, so F-Droid is likely
-to mark it with the NonFreeNet anti-feature.
+gc (Github Contribution) is a tiny widget for viewing GitHub contribution graph.
