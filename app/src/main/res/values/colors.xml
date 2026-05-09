@@ -4,6 +4,7 @@
     <color name="widget_background">#ffffff</color>
     <color name="field_background">#ffffff</color>
     <color name="field_border">#d0d7de</color>
+    <color name="icon_background">#ffffff</color>
     <color name="text_primary">#24292f</color>
     <color name="text_secondary">#57606a</color>
 </resources>
