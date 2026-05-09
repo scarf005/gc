@@ -2,16 +2,32 @@ name: android
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing tag to sign and publish, e.g. v1.0.1
+        required: false
+        type: string
   pull_request:
   push:
     branches: [main]
+    tags: [v*]
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      HAS_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD != '' }}
+      HAS_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS != '' }}
+      HAS_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD != '' }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_tag || github.ref }}
 
       - uses: actions/setup-java@v4
         with:
@@ -41,3 +57,67 @@ jobs:
         with:
           name: app-release-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Resolve release tag
+        id: release
+        run: |
+          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
+            tag="${{ github.event.inputs.release_tag }}"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag=""
+          fi
+          version="${tag#v}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "apk=app/build/outputs/apk/release/gc-$version.apk" >> "$GITHUB_OUTPUT"
+
+      - name: Check release signing secrets
+        if: steps.release.outputs.tag != '' && (env.HAS_ANDROID_KEYSTORE_BASE64 != 'true' || env.HAS_ANDROID_KEYSTORE_PASSWORD != 'true' || env.HAS_ANDROID_KEY_ALIAS != 'true' || env.HAS_ANDROID_KEY_PASSWORD != 'true')
+        run: |
+          echo '::error::Set ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD secrets.'
+          exit 1
+
+      - name: Sign release APK
+        if: steps.release.outputs.tag != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          keystore="$RUNNER_TEMP/release.jks"
+          aligned="app/build/outputs/apk/release/gc-${{ steps.release.outputs.version }}-aligned.apk"
+          signed="${{ steps.release.outputs.apk }}"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk "$aligned"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign \
+            --ks "$keystore" \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --ks-pass "pass:$ANDROID_KEYSTORE_PASSWORD" \
+            --key-pass "pass:$ANDROID_KEY_PASSWORD" \
+            --out "$signed" \
+            "$aligned"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$signed"
+
+      - name: Upload signed release APK
+        if: steps.release.outputs.tag != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: gc-${{ steps.release.outputs.version }}
+          path: ${{ steps.release.outputs.apk }}
+
+      - name: Publish GitHub release
+        if: steps.release.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          apk="${{ steps.release.outputs.apk }}"
+          name="gc-${{ steps.release.outputs.version }}.apk"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$apk#$name" --clobber
+          else
+            gh release create "$tag" "$apk#$name" --title "$tag" --notes "Release $tag"
+          fi
