@@ -93,6 +93,7 @@ jobs:
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk "$aligned"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign \
+            --alignment-preserved true \
             --ks "$keystore" \
             --ks-key-alias "$ANDROID_KEY_ALIAS" \
             --ks-pass "pass:$ANDROID_KEYSTORE_PASSWORD" \
