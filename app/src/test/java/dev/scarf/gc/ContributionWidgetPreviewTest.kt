@@ -1,20 +1,30 @@
 package dev.scarf.gc
 
 import java.io.File
+import android.graphics.drawable.GradientDrawable
 import kotlin.math.max
 import org.junit.Assume.assumeTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class ContributionWidgetPreviewTest {
     @Test
     fun writesSvgPreviews() {
         assumeTrue(System.getenv("GC_WIDGET_PREVIEWS") == "1")
         val out = File(System.getenv("GC_WIDGET_PREVIEW_OUT") ?: "build/widget-previews").apply { mkdirs() }
-        defaultPreviewSizes.forEach { size ->
-            val file = File(out, "gc-widget-${size.widthDp}x${size.heightDp}dp.svg")
-            file.writeText(widgetPreviewSvg(size))
+        val context = RuntimeEnvironment.getApplication()
+        val default = WidgetTheme.fromKey(context, null)
+        WidgetTheme.all(context).forEach { theme -> defaultPreviewSizes.forEach { size ->
+            val suffix = if (theme == default) "" else "-${theme.key}"
+            val file = File(out, "gc-widget-${size.widthDp}x${size.heightDp}dp$suffix.svg")
+            file.writeText(widgetPreviewSvg(size, theme))
             println(file.absolutePath)
-        }
+        } }
     }
 }
 
@@ -29,9 +39,10 @@ private val defaultPreviewSizes = listOf(
 
 private const val previewDensity = 3f
 private const val previewRowCount = 7
-private val previewLevelColors = listOf("#ebedf0", "#8ee8a4", "#39ce5b", "#2eb24c", "#278d3b")
-
-private fun widgetPreviewSvg(size: PreviewSize): String {
+private fun widgetPreviewSvg(size: PreviewSize, theme: WidgetTheme): String {
+    val palette = theme.levelColors(RuntimeEnvironment.getApplication())
+    val levelColors = palette.map { "#%06x".format(it and 0xffffff) }
+    val borderColor = theme.borderColor
     val paddingDp = graphPaddingDp(size.heightDp)
     val graphWidthDp = max(1, size.widthDp - paddingDp * 2)
     val graphHeightDp = max(1, size.heightDp - paddingDp * 2)
@@ -52,18 +63,27 @@ private fun widgetPreviewSvg(size: PreviewSize): String {
         repeat(layout.columns) { x -> repeat(rows) { y ->
             val left = offsetX + x * (cell + gap) + inset
             val top = offsetY + y * (cell + gap) + inset
-            appendLine("  <rect x=\"${left.svg()}\" y=\"${top.svg()}\" width=\"${draw.svg()}\" height=\"${draw.svg()}\" rx=\"${radius.svg()}\" ry=\"${radius.svg()}\" fill=\"${previewLevelColors[previewLevel(x, y)]}\" />")
+            appendLine("  <rect x=\"${left.svg()}\" y=\"${top.svg()}\" width=\"${draw.svg()}\" height=\"${draw.svg()}\" rx=\"${radius.svg()}\" ry=\"${radius.svg()}\" fill=\"${levelColors[previewLevel(x, y)]}\" fill-opacity=\"${(palette[previewLevel(x, y)] ushr 24) / 255f}\" />")
+            borderColor?.let { border ->
+                appendLine("  <rect x=\"${(left + 0.5f).svg()}\" y=\"${(top + 0.5f).svg()}\" width=\"${(draw - 1f).svg()}\" height=\"${(draw - 1f).svg()}\" rx=\"${radius.svg()}\" ry=\"${radius.svg()}\" fill=\"none\" stroke=\"#%06x\" stroke-width=\"1\" />".format(border and 0xffffff))
+            }
         } }
     }
     return """
         |<svg xmlns="http://www.w3.org/2000/svg" width="$widthPx" height="$heightPx" viewBox="0 0 $widthPx $heightPx">
         |  <title>gc widget preview ${size.widthDp}x${size.heightDp}dp, columns=${layout.columns}, cell=${layout.cellDp}dp, gap=${layout.gapDp}dp, padding=${paddingDp}dp</title>
-        |  <rect x="0" y="0" width="$widthPx" height="$heightPx" rx="${(8 * previewDensity).svg()}" ry="${(8 * previewDensity).svg()}" fill="#ffffff" />
+        |  <rect x="0" y="0" width="$widthPx" height="$heightPx" rx="${(8 * previewDensity).svg()}" ry="${(8 * previewDensity).svg()}" fill="${previewBackground(theme)}" />
         |$rects</svg>
         |
     """.trimMargin()
 }
 
-private fun previewLevel(column: Int, row: Int) = (column * 37 + row * 17 + column / 3) % previewLevelColors.size
+private fun previewBackground(theme: WidgetTheme): String {
+    if (theme.backgroundResId == android.R.color.transparent) return "none"
+    val background = RuntimeEnvironment.getApplication().getDrawable(theme.backgroundResId) as GradientDrawable
+    return "#%06x".format(background.color!!.defaultColor and 0xffffff)
+}
+
+private fun previewLevel(column: Int, row: Int) = (column * 37 + row * 17 + column / 3) % 5
 
 private fun Float.svg() = "%.2f".format(this)

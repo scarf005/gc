@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="WidgetTheme">
+        <attr name="widgetThemeKey" format="string" />
+        <attr name="widgetThemeTitle" format="reference" />
+        <attr name="widgetThemeBackground" format="reference" />
+        <attr name="widgetThemePalette" format="reference" />
+        <attr name="widgetThemeBorder" format="color" />
+        <attr name="widgetThemeAliases" format="reference" />
+    </declare-styleable>
+
+    <string name="widget_theme_default_key" translatable="false">light</string>
+    <array name="widget_themes">
+        <item>@style/WidgetTheme.Light</item>
+        <item>@style/WidgetTheme.Dark</item>
+        <item>@style/WidgetTheme.LightHighContrast</item>
+        <item>@style/WidgetTheme.DarkHighContrast</item>
+        <item>@style/WidgetTheme.DarkDimmed</item>
+        <item>@style/WidgetTheme.DarkDimmedHighContrast</item>
+        <item>@style/WidgetTheme.HalloweenLight</item>
+        <item>@style/WidgetTheme.HalloweenDark</item>
+        <item>@style/WidgetTheme.WinterLight</item>
+        <item>@style/WidgetTheme.WinterDark</item>
+        <item>@style/WidgetTheme.Transparent</item>
+    </array>
+
+    <style name="WidgetTheme.Light" parent="">
+        <item name="widgetThemeKey">light</item>
+        <item name="widgetThemeTitle">@string/widget_theme_light</item>
+        <item name="widgetThemeBackground">@drawable/widget_background</item>
+        <item name="widgetThemePalette">@array/widget_palette_light</item>
+    </style>
+    <style name="WidgetTheme.Dark" parent="">
+        <item name="widgetThemeKey">dark</item>
+        <item name="widgetThemeTitle">@string/widget_theme_dark</item>
+        <item name="widgetThemeBackground">@drawable/widget_background_dark</item>
+        <item name="widgetThemePalette">@array/widget_palette_dark</item>
+    </style>
+    <style name="WidgetTheme.LightHighContrast" parent="">
+        <item name="widgetThemeKey">light-high-contrast</item>
+        <item name="widgetThemeTitle">@string/widget_theme_light_high_contrast</item>
+        <item name="widgetThemeBackground">@drawable/widget_background</item>
+        <item name="widgetThemePalette">@array/widget_palette_light_high_contrast</item>
+        <item name="widgetThemeBorder">@color/widget_border_light_high_contrast</item>
+    </style>
+    <style name="WidgetTheme.DarkHighContrast" parent="">
+        <item name="widgetThemeKey">dark-high-contrast</item>
+        <item name="widgetThemeTitle">@string/widget_theme_dark_high_contrast</item>
+        <item name="widgetThemeBackground">@drawable/widget_background_dark_high_contrast</item>
+        <item name="widgetThemePalette">@array/widget_palette_dark_high_contrast</item>
+        <item name="widgetThemeBorder">@color/widget_border_dark_high_contrast</item>
+    </style>
+    <style name="WidgetTheme.DarkDimmed" parent="">
+        <item name="widgetThemeKey">dark-dimmed</item>
+        <item name="widgetThemeTitle">@string/widget_theme_dark_dimmed</item>
+        <item name="widgetThemeBackground">@drawable/widget_background_dark_dimmed</item>
+        <item name="widgetThemePalette">@array/widget_palette_dark_dimmed</item>
+    </style>
+    <style name="WidgetTheme.DarkDimmedHighContrast" parent="">
+        <item name="widgetThemeKey">dark-dimmed-high-contrast</item>
+        <item name="widgetThemeTitle">@string/widget_theme_dark_dimmed_high_contrast</item>
+        <item name="widgetThemeBackground">@drawable/widget_background_dark_dimmed</item>
+        <item name="widgetThemePalette">@array/widget_palette_dark_dimmed_high_contrast</item>
+    </style>
+    <style name="WidgetTheme.HalloweenLight" parent="">
+        <item name="widgetThemeKey">halloween-light</item>
+        <item name="widgetThemeTitle">@string/widget_theme_halloween_light</item>
+        <item name="widgetThemeBackground">@drawable/widget_background</item>
+        <item name="widgetThemePalette">@array/widget_palette_halloween_light</item>
+    </style>
+    <style name="WidgetTheme.HalloweenDark" parent="">
+        <item name="widgetThemeKey">halloween-dark</item>
+        <item name="widgetThemeTitle">@string/widget_theme_halloween_dark</item>
+        <item name="widgetThemeBackground">@drawable/widget_background_dark</item>
+        <item name="widgetThemePalette">@array/widget_palette_halloween_dark</item>
+    </style>
+    <style name="WidgetTheme.WinterLight" parent="">
+        <item name="widgetThemeKey">winter-light</item>
+        <item name="widgetThemeTitle">@string/widget_theme_winter_light</item>
+        <item name="widgetThemeBackground">@drawable/widget_background</item>
+        <item name="widgetThemePalette">@array/widget_palette_winter_light</item>
+        <item name="widgetThemeAliases">@array/widget_theme_winter_light_aliases</item>
+    </style>
+    <style name="WidgetTheme.WinterDark" parent="">
+        <item name="widgetThemeKey">winter-dark</item>
+        <item name="widgetThemeTitle">@string/widget_theme_winter_dark</item>
+        <item name="widgetThemeBackground">@drawable/widget_background_dark</item>
+        <item name="widgetThemePalette">@array/widget_palette_winter_dark</item>
+    </style>
+    <style name="WidgetTheme.Transparent" parent="">
+        <item name="widgetThemeKey">transparent</item>
+        <item name="widgetThemeTitle">@string/widget_theme_transparent</item>
+        <item name="widgetThemeBackground">@android:color/transparent</item>
+        <item name="widgetThemePalette">@array/widget_palette_transparent</item>
+    </style>
+    <string-array name="widget_theme_winter_light_aliases" translatable="false">
+        <item>blue</item>
+    </string-array>
+
+    <array name="widget_palette_light">
+        <item>#eff2f5</item>
+        <item>#aceebb</item>
+        <item>#4ac26b</item>
+        <item>#2da44e</item>
+        <item>#116329</item>
+    </array>
+    <array name="widget_palette_dark">
+        <item>#151b23</item>
+        <item>#033a16</item>
+        <item>#196c2e</item>
+        <item>#2ea043</item>
+        <item>#56d364</item>
+    </array>
+    <array name="widget_palette_light_high_contrast">
+        <item>#ffffff</item>
+        <item>#82e596</item>
+        <item>#26a148</item>
+        <item>#117f32</item>
+        <item>#024c1a</item>
+    </array>
+    <color name="widget_border_light_high_contrast">#010409</color>
+    <array name="widget_palette_dark_high_contrast">
+        <item>#010409</item>
+        <item>#007728</item>
+        <item>#02a232</item>
+        <item>#0ac740</item>
+        <item>#4ae168</item>
+    </array>
+    <color name="widget_border_dark_high_contrast">#ffffff</color>
+    <array name="widget_palette_dark_dimmed">
+        <item>#2a313c</item>
+        <item>#1b4721</item>
+        <item>#2b6a30</item>
+        <item>#46954a</item>
+        <item>#6bc46d</item>
+    </array>
+    <array name="widget_palette_dark_dimmed_high_contrast">
+        <item>#151b23</item>
+        <item>#1b4721</item>
+        <item>#2b6a30</item>
+        <item>#46954a</item>
+        <item>#6bc46d</item>
+    </array>
+    <array name="widget_palette_halloween_light">
+        <item>#eff2f5</item>
+        <item>#f0db3d</item>
+        <item>#ffd642</item>
+        <item>#f68c41</item>
+        <item>#1f2328</item>
+    </array>
+    <array name="widget_palette_halloween_dark">
+        <item>#151b23</item>
+        <item>#fac68f</item>
+        <item>#c46212</item>
+        <item>#984b10</item>
+        <item>#e3d04f</item>
+    </array>
+    <array name="widget_palette_winter_light">
+        <item>#eff2f5</item>
+        <item>#b6e3ff</item>
+        <item>#54aeff</item>
+        <item>#0969da</item>
+        <item>#0a3069</item>
+    </array>
+    <array name="widget_palette_winter_dark">
+        <item>#151b23</item>
+        <item>#0c2d6b</item>
+        <item>#1158c7</item>
+        <item>#58a6ff</item>
+        <item>#cae8ff</item>
+    </array>
+    <array name="widget_palette_transparent">
+        <item>#2039d353</item>
+        <item>#5439d353</item>
+        <item>#8839d353</item>
+        <item>#c439d353</item>
+        <item>#39d353</item>
+    </array>
+</resources>
