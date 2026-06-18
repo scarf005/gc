@@ -14,6 +14,7 @@
 ## Features
 
 - small size (<100 KiB release binary)
+- configurable color schemes
 - simple codebase (<500 LoC)
 
 ## License
