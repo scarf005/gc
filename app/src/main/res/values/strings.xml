@@ -5,6 +5,10 @@
     <string name="widget_description">Resizable GitHub contribution graph</string>
     <string name="widget_handle_hint">GitHub handle</string>
     <string name="widget_save">Save</string>
+    <string name="widget_theme_label">Color scheme</string>
+    <string name="widget_theme_light">GitHub light</string>
+    <string name="widget_theme_dark">GitHub dark</string>
+    <string name="widget_theme_blue">Blue</string>
     <string name="widget_idle_status">Save to verify</string>
     <string name="widget_empty_status">Type a handle</string>
     <string name="widget_loading_status">Refreshing...</string>

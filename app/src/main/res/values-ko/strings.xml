@@ -5,6 +5,10 @@
     <string name="widget_description">크기 조절 가능한 GitHub 기여 그래프</string>
     <string name="widget_handle_hint">GitHub 핸들</string>
     <string name="widget_save">저장</string>
+    <string name="widget_theme_label">색상 스킴</string>
+    <string name="widget_theme_light">GitHub 라이트</string>
+    <string name="widget_theme_dark">GitHub 다크</string>
+    <string name="widget_theme_blue">블루</string>
     <string name="widget_idle_status">저장해서 확인</string>
     <string name="widget_empty_status">핸들을 입력하세요</string>
     <string name="widget_loading_status">새로고침 중...</string>
