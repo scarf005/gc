@@ -18,6 +18,9 @@ test:
 debug:
     ./gradlew assembleDebug
 
+widget-previews:
+    GC_WIDGET_PREVIEWS=1 GC_WIDGET_PREVIEW_OUT="$PWD/build/widget-previews" ./gradlew testDebugUnitTest --tests dev.scarf.gc.ContributionWidgetPreviewTest
+
 install-debug: debug
     if command -v android >/dev/null; then android run --apks=app/build/outputs/apk/debug/app-debug.apk; else adb install -r app/build/outputs/apk/debug/app-debug.apk; fi
 

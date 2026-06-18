@@ -12,12 +12,13 @@ import android.util.Log
 import android.widget.RemoteViews
 import java.util.concurrent.Executors
 import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 private const val prefsName = "contribution_widget"
 private const val actionRefresh = "dev.scarf.gc.MANUAL_REFRESH"
-private const val graphPaddingDp = 6
+private const val referenceGraphPaddingHeightRatio = 0.085f
+private const val referenceTargetCellDp = 10
+private const val referenceTargetGapDp = 2
 private const val logTag = "ContributionWidget"
 internal val io = Executors.newSingleThreadExecutor()
 private fun prefs(context: Context) = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
@@ -74,9 +75,10 @@ internal object ContributionWidgetUpdater {
 
     private fun show(context: Context, appWidgetId: Int, stats: ContributionStats? = null) {
         val options = renderOptions(context, appWidgetId)
-        val bitmap = stats?.let { ContributionBitmapRenderer.render(it, options) } ?: ContributionBitmapRenderer.placeholder(options)
+        val bitmap = stats?.let { ContributionBitmapRenderer.render(it, options.graph) } ?: ContributionBitmapRenderer.placeholder(options.graph)
         AppWidgetManager.getInstance(context).updateAppWidget(appWidgetId, RemoteViews(context.packageName, R.layout.widget_contribution).apply {
             setImageViewBitmap(R.id.widgetGraph, bitmap)
+            setViewPadding(R.id.widgetGraph, options.paddingPx, options.paddingPx, options.paddingPx, options.paddingPx)
             setOnClickPendingIntent(R.id.widgetRoot, settingsIntent(context, appWidgetId))
         })
     }
@@ -96,18 +98,68 @@ private fun settingsIntent(context: Context, appWidgetId: Int) = PendingIntent.g
     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
 )
 
-private fun renderOptions(context: Context, appWidgetId: Int): ContributionBitmapRenderer.RenderOptions {
+private data class WidgetRenderOptions(val graph: ContributionBitmapRenderer.RenderOptions, val paddingPx: Int)
+
+private fun renderOptions(context: Context, appWidgetId: Int): WidgetRenderOptions {
     val options = AppWidgetManager.getInstance(context).getAppWidgetOptions(appWidgetId)
     val density = context.resources.displayMetrics.density
-    val widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 250).takeIf { it > 0 } ?: 250
-    val heightDp = max(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 40), options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 40)).takeIf { it > 0 } ?: 40
-    val span = { dp: Int -> max(1, min(((dp + 30f) / 70f).toInt(), (dp / 62.5f).toInt())) }
-    return ContributionBitmapRenderer.RenderOptions(
-        max((widthDp * density).roundToInt() - dp(context, graphPaddingDp * 2), 13),
-        max((heightDp * density).roundToInt() - dp(context, graphPaddingDp * 2), 13),
-        span(widthDp) * 5,
-        span(heightDp),
+    val widgetHeightDp = widgetHeightDp(
+        options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 40),
+        options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 40),
+    )
+    val paddingDp = graphPaddingDp(widgetHeightDp)
+    val bounds = widgetGraphBoundsDp(
+        options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 250),
+        options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 250),
+        widgetHeightDp,
+        paddingDp,
+    )
+    val layout = contributionGraphLayout(bounds.widthDp, bounds.heightDp, referenceTargetCellDp, referenceTargetGapDp)
+    return WidgetRenderOptions(
+        ContributionBitmapRenderer.RenderOptions(
+            max((bounds.widthDp * density).roundToInt(), 13),
+            max((bounds.heightDp * density).roundToInt(), 13),
+            layout.columns,
+            layout.weekBlocks,
+            dp(context, layout.cellDp),
+            dp(context, layout.gapDp),
+        ),
+        dp(context, paddingDp),
     )
 }
+
+internal fun widgetHeightDp(minHeightDp: Int, maxHeightDp: Int) = max(minHeightDp, maxHeightDp).takeIf { it > 0 } ?: 40
+
+internal fun graphPaddingDp(widgetHeightDp: Int) = max(1, (widgetHeightDp * referenceGraphPaddingHeightRatio).roundToInt())
+
+internal data class WidgetGraphBoundsDp(val widthDp: Int, val heightDp: Int)
+
+internal fun widgetGraphBoundsDp(minWidthDp: Int, maxWidthDp: Int, heightDp: Int, graphPaddingDp: Int): WidgetGraphBoundsDp {
+    val widthDp = minWidthDp.takeIf { it > 0 } ?: maxWidthDp.takeIf { it > 0 } ?: 250
+    return WidgetGraphBoundsDp(max(1, widthDp - graphPaddingDp * 2), max(1, heightDp - graphPaddingDp * 2))
+}
+
+internal data class ContributionGraphLayout(val columns: Int, val weekBlocks: Int, val cellDp: Int, val gapDp: Int)
+
+internal fun contributionGraphLayout(widthDp: Int, heightDp: Int, targetCellDp: Int, targetGapDp: Int): ContributionGraphLayout {
+    val weekBlocks = 1
+    val rows = weekBlocks * 7
+    for (cellDp in max(1, heightDp / rows) downTo 1) {
+        val gapDp = scaledGap(cellDp, targetCellDp, targetGapDp)
+        val heightUsedDp = gridLength(rows, cellDp, gapDp)
+        if (heightUsedDp > heightDp) continue
+        val columns = fitSlots(widthDp, cellDp, gapDp)
+        val horizontalPaddingDp = widthDp - gridLength(columns, cellDp, gapDp)
+        val verticalPaddingDp = heightDp - heightUsedDp
+        if (horizontalPaddingDp <= verticalPaddingDp || cellDp == 1) return ContributionGraphLayout(columns, weekBlocks, cellDp, gapDp)
+    }
+    return ContributionGraphLayout(1, weekBlocks, 1, 0)
+}
+
+private fun scaledGap(cellDp: Int, targetCellDp: Int, targetGapDp: Int) = if (targetGapDp == 0 || cellDp == 1) 0 else max(1, (cellDp * targetGapDp.toFloat() / targetCellDp).roundToInt())
+
+private fun fitSlots(lengthDp: Int, cellDp: Int, gapDp: Int) = max(1, (lengthDp + gapDp) / (cellDp + gapDp))
+
+private fun gridLength(slots: Int, cellDp: Int, gapDp: Int) = slots * cellDp + max(0, slots - 1) * gapDp
 
 private fun dp(context: Context, value: Int) = (value * context.resources.displayMetrics.density).roundToInt()

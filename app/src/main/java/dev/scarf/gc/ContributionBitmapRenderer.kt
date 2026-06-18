@@ -12,15 +12,13 @@ import kotlin.math.roundToInt
 
 private val levelColors = intArrayOf(Color.parseColor("#ebedf0"), Color.parseColor("#8ee8a4"), Color.parseColor("#39ce5b"), Color.parseColor("#2eb24c"), Color.parseColor("#278d3b"))
 private const val rowCount = 7
-private const val githubCell = 10f
-private const val githubGap = 2f
 
 internal object ContributionBitmapRenderer {
-    data class RenderOptions(val widthPx: Int, val heightPx: Int, val columns: Int, val weekBlocks: Int)
+    data class RenderOptions(val widthPx: Int, val heightPx: Int, val columns: Int, val weekBlocks: Int, val targetCellPx: Int, val targetGapPx: Int)
 
     fun render(stats: ContributionStats, options: RenderOptions): Bitmap {
         val width = max(1, options.widthPx); val height = max(1, options.heightPx); val columns = max(1, options.columns); val blocks = max(1, options.weekBlocks); val rows = rowCount * blocks
-        val (cell, gap) = cellAndGap(width, height, columns, rows)
+        val (cell, gap) = cellAndGap(width, height, columns, rows, max(1, options.targetCellPx), max(0, options.targetGapPx))
         val offsetX = max(0, (width - (columns * cell + (columns - 1) * gap)) / 2)
         val offsetY = max(0, (height - (rows * cell + (rows - 1) * gap)) / 2)
         val draw = max(1f, cell * 0.95f); val inset = (cell - draw) / 2f; val radius = max(1f, draw * 0.12f)
@@ -39,9 +37,10 @@ internal object ContributionBitmapRenderer {
 
     fun placeholder(options: RenderOptions, today: LocalDate = LocalDate.now()) = render(emptyContributionStats(today), options)
 
-    private fun cellAndGap(widthPx: Int, heightPx: Int, columns: Int, rows: Int): Pair<Int, Int> {
-        for (cell in minOf(max(1, heightPx / rows), max(1, widthPx / max(1, columns))) downTo 1) {
-            val gap = max(1, (cell * githubGap / githubCell).roundToInt())
+    private fun cellAndGap(widthPx: Int, heightPx: Int, columns: Int, rows: Int, targetCellPx: Int, targetGapPx: Int): Pair<Int, Int> {
+        val maxCell = minOf(targetCellPx, max(1, heightPx / rows), max(1, widthPx / max(1, columns)))
+        for (cell in maxCell downTo 1) {
+            val gap = if (targetGapPx == 0 || cell == 1) 0 else max(1, (cell * targetGapPx.toFloat() / targetCellPx).roundToInt())
             if (rows * cell + (rows - 1) * gap <= heightPx && columns * cell + (columns - 1) * gap <= widthPx) return cell to gap
         }
         return 1 to 0

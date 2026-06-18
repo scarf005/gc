@@ -13,6 +13,6 @@
         android:background="@drawable/widget_background"
         android:contentDescription="@string/widget_graph_content_description"
         android:padding="6dp"
-        android:scaleType="centerInside" />
+        android:scaleType="center" />
 
 </FrameLayout>
