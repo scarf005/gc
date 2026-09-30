@@ -13,7 +13,8 @@ internal enum class WidgetTheme(val key: String, val titleResId: Int, val backgr
         R.string.widget_theme_blue,
         R.drawable.widget_background_blue,
         intArrayOf(0xffeaf2ff.toInt(), 0xffb6e3ff.toInt(), 0xff54aeff.toInt(), 0xff0969da.toInt(), 0xff0550ae.toInt()),
-    );
+    ),
+    Transparent("transparent", R.string.widget_theme_transparent, android.R.color.transparent, defaultLevelColors);
 
     companion object {
         val default = Light

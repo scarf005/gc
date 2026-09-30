@@ -15,7 +15,7 @@
 
 - small size (<100 KiB release binary)
 - resizable home-screen widget
-- configurable color schemes
+- configurable color schemes: GitHub light, GitHub dark, blue, and transparent background
 - simple codebase (<500 LoC)
 
 ## License

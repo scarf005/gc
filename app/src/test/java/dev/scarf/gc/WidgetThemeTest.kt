@@ -12,6 +12,22 @@ class WidgetThemeTest {
     }
 
     @Test
+    fun roundTripsEveryThemeKey() {
+        WidgetTheme.values().forEach { theme ->
+            assertEquals(theme, WidgetTheme.fromKey(theme.key))
+        }
+    }
+
+    @Test
+    fun transparentThemeKeepsContributionColorsWithoutACardBackground() {
+        val theme = WidgetTheme.fromKey("transparent")
+        assertEquals(WidgetTheme.Transparent, theme)
+        assertEquals(android.R.color.transparent, theme.backgroundResId)
+        assertTrue(defaultLevelColors.contentEquals(theme.levelColors))
+        assertTrue(theme.levelColors.all { it ushr 24 == 0xff })
+    }
+
+    @Test
     fun exposesFiveContributionLevelsPerTheme() {
         WidgetTheme.values().forEach { theme ->
             assertEquals(5, theme.levelColors.size)
