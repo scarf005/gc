@@ -128,6 +128,7 @@ private fun renderOptions(context: Context, appWidgetId: Int, theme: WidgetTheme
             dp(context, layout.cellDp),
             dp(context, layout.gapDp),
             theme.levelColors,
+            theme.borderColor,
         ),
         dp(context, paddingDp),
     )

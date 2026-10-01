@@ -9,11 +9,11 @@ import java.time.LocalDate
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-internal val defaultLevelColors = intArrayOf(0xffebedf0.toInt(), 0xff8ee8a4.toInt(), 0xff39ce5b.toInt(), 0xff2eb24c.toInt(), 0xff278d3b.toInt())
+internal val defaultLevelColors = intArrayOf(0xffeff2f5.toInt(), 0xffaceebb.toInt(), 0xff4ac26b.toInt(), 0xff2da44e.toInt(), 0xff116329.toInt())
 private const val rowCount = 7
 
 internal object ContributionBitmapRenderer {
-    data class RenderOptions(val widthPx: Int, val heightPx: Int, val columns: Int, val weekBlocks: Int, val targetCellPx: Int, val targetGapPx: Int, val levelColors: IntArray = defaultLevelColors)
+    data class RenderOptions(val widthPx: Int, val heightPx: Int, val columns: Int, val weekBlocks: Int, val targetCellPx: Int, val targetGapPx: Int, val levelColors: IntArray = defaultLevelColors, val borderColor: Int? = null)
 
     fun render(stats: ContributionStats, options: RenderOptions): Bitmap {
         val width = max(1, options.widthPx); val height = max(1, options.heightPx); val columns = max(1, options.columns); val blocks = max(1, options.weekBlocks); val rows = rowCount * blocks
@@ -27,9 +27,16 @@ internal object ContributionBitmapRenderer {
         repeat(columns) { x -> repeat(rows) { y ->
             val date = first.plusWeeks((x * blocks + y / rowCount).toLong()).plusDays((y % rowCount).toLong())
             if (date <= stats.endDate) {
+                paint.style = Paint.Style.FILL
                 paint.color = colors[(days[date]?.level ?: 0).coerceIn(0, colors.lastIndex)]
                 val left = offsetX + x * (cell + gap) + inset; val top = offsetY + y * (cell + gap) + inset
                 canvas.drawRoundRect(RectF(left, top, left + draw, top + draw), radius, radius, paint)
+                options.borderColor?.let { borderColor ->
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeWidth = 1f
+                    paint.color = borderColor
+                    canvas.drawRoundRect(RectF(left + 0.5f, top + 0.5f, left + draw - 0.5f, top + draw - 0.5f), radius, radius, paint)
+                }
             }
         } }
         return bitmap

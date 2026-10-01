@@ -8,6 +8,14 @@
     <string name="widget_theme_label">색상 스킴</string>
     <string name="widget_theme_light">GitHub 라이트</string>
     <string name="widget_theme_dark">GitHub 다크</string>
+    <string name="widget_theme_light_high_contrast">GitHub 라이트 고대비</string>
+    <string name="widget_theme_dark_high_contrast">GitHub 다크 고대비</string>
+    <string name="widget_theme_dark_dimmed">GitHub 다크 딤드</string>
+    <string name="widget_theme_dark_dimmed_high_contrast">GitHub 다크 딤드 고대비</string>
+    <string name="widget_theme_halloween_light">할로윈 라이트</string>
+    <string name="widget_theme_halloween_dark">할로윈 다크</string>
+    <string name="widget_theme_winter_light">겨울 라이트</string>
+    <string name="widget_theme_winter_dark">겨울 다크</string>
     <string name="widget_theme_blue">블루</string>
     <string name="widget_theme_transparent">투명</string>
     <string name="widget_idle_status">저장해서 확인</string>

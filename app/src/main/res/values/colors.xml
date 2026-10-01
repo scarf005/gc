@@ -3,7 +3,8 @@
     <color name="screen_background">#ffffff</color>
     <color name="widget_background">#ffffff</color>
     <color name="widget_background_dark">#0d1117</color>
-    <color name="widget_background_blue">#f6f8ff</color>
+    <color name="widget_background_dark_high_contrast">#010409</color>
+    <color name="widget_background_dark_dimmed">#212830</color>
     <color name="field_background">#ffffff</color>
     <color name="field_border">#d0d7de</color>
     <color name="icon_background">#ffffff</color>

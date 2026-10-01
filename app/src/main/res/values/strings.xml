@@ -8,7 +8,14 @@
     <string name="widget_theme_label">Color scheme</string>
     <string name="widget_theme_light">GitHub light</string>
     <string name="widget_theme_dark">GitHub dark</string>
-    <string name="widget_theme_blue">Blue</string>
+    <string name="widget_theme_light_high_contrast">GitHub light high contrast</string>
+    <string name="widget_theme_dark_high_contrast">GitHub dark high contrast</string>
+    <string name="widget_theme_dark_dimmed">GitHub dark dimmed</string>
+    <string name="widget_theme_dark_dimmed_high_contrast">GitHub dark dimmed high contrast</string>
+    <string name="widget_theme_halloween_light">Halloween light</string>
+    <string name="widget_theme_halloween_dark">Halloween dark</string>
+    <string name="widget_theme_winter_light">Winter light</string>
+    <string name="widget_theme_winter_dark">Winter dark</string>
     <string name="widget_theme_transparent">Transparent</string>
     <string name="widget_idle_status">Save to verify</string>
     <string name="widget_empty_status">Type a handle</string>

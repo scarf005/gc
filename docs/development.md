@@ -39,6 +39,14 @@ android docs search 'app widget debugging'
 
 Project-local Android agent instructions live in `.skills/gc-android-workflow/SKILL.md`.
 
+## Contribution palettes
+
+GitHub palettes use the [Primer contribution tokens](https://github.com/primer/primitives/blob/main/src/tokens/component/contribution.json5), resolved from [`@primer/primitives` 11.10.0 CSS](https://unpkg.com/@primer/primitives@11.10.0/dist/css/functional/themes/).
+
+- Expose the six distinct default graph palettes and Halloween/winter light/dark palettes. Colorblind and tritanopia modes share their corresponding default graph colors, so they are not duplicate choices.
+- Seasonal themes are manually selectable year-round; they do not change automatically with the date.
+- Resolve the legacy `blue` theme key to winter light without a duplicate choice. Transparent uses the default light contribution colors.
+
 ## Renderer-level previews
 
 Generate widget graph previews without a device or launcher:
@@ -47,7 +55,7 @@ Generate widget graph previews without a device or launcher:
 just widget-previews
 ```
 
-This runs `ContributionWidgetPreviewTest` with `GC_WIDGET_PREVIEWS=1` and writes SVG files to `build/widget-previews/`. The preview renderer mirrors the widget layout contract from Kotlin: 7 rows for `n x 1`, square size from available height, unchanged gap ratio, and maximum auto-fit columns while keeping L/R leftover padding no larger than U/D leftover padding.
+This runs `ContributionWidgetPreviewTest` with `GC_WIDGET_PREVIEWS=1` and writes SVG files for every theme to `build/widget-previews/`, using the production palettes and card background resources. The preview renderer mirrors the widget layout contract from Kotlin: 7 rows for `n x 1`, square size from available height, unchanged gap ratio, and maximum auto-fit columns while keeping L/R leftover padding no larger than U/D leftover padding.
 
 ## CLI screenshots
 
