@@ -45,6 +45,7 @@ GitHub palettes use the [Primer contribution tokens](https://github.com/primer/p
 
 - Expose the six distinct default graph palettes and Halloween/winter light/dark palettes. Colorblind and tritanopia modes share their corresponding default graph colors, so they are not duplicate choices.
 - Seasonal themes are manually selectable year-round; they do not change automatically with the date.
+- Theme selection persists immediately and redraws cached data without fetching or saving the edited handle. Saving an unchanged handle with cached data also skips fetching; new handles or missing caches fetch once.
 - Resolve the legacy `blue` theme key to winter light without a duplicate choice. Transparent uses the default light contribution colors.
 
 ## Renderer-level previews

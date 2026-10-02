@@ -48,6 +48,8 @@ class ContributionWidgetProvider : AppWidgetProvider() {
 }
 
 internal object ContributionWidgetUpdater {
+    fun redrawStored(context: Context, appWidgetId: Int) = show(context, appWidgetId, WidgetPreferences.readStats(context, appWidgetId))
+
     fun refreshStored(context: Context, appWidgetId: Int): Result<ContributionStats> {
         val handle = WidgetPreferences.readHandle(context, appWidgetId)
         if (handle.isBlank()) return Result.success(emptyContributionStats()).also { show(context, appWidgetId) }
