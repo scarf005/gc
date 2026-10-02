@@ -25,6 +25,20 @@
             android:textColorHint="@color/text_secondary" />
 
         <TextView
+            android:id="@+id/themeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/widget_theme_label"
+            android:textColor="@color/text_primary" />
+
+        <Spinner
+            android:id="@+id/themeInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+
+        <TextView
             android:id="@+id/statusView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

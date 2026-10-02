@@ -28,7 +28,9 @@ internal object WidgetPreferences {
     fun writeHandle(context: Context, id: Int, handle: String) = prefs(context).edit().putString("handle_$id", normalizeHandle(handle)).apply()
     fun readStats(context: Context, id: Int) = prefs(context).getString("stats_$id", "")?.let(::decodeContributionStats)
     fun writeStats(context: Context, id: Int, stats: ContributionStats) = prefs(context).edit().putString("stats_$id", encodeContributionStats(stats)).apply()
-    fun clear(context: Context, id: Int) = prefs(context).edit().remove("handle_$id").remove("stats_$id").apply()
+    fun readTheme(context: Context, id: Int) = WidgetTheme.fromKey(prefs(context).getString("theme_$id", null))
+    fun writeTheme(context: Context, id: Int, theme: WidgetTheme) = prefs(context).edit().putString("theme_$id", theme.key).apply()
+    fun clear(context: Context, id: Int) = prefs(context).edit().remove("handle_$id").remove("stats_$id").remove("theme_$id").apply()
 }
 
 class ContributionWidgetProvider : AppWidgetProvider() {
@@ -46,6 +48,8 @@ class ContributionWidgetProvider : AppWidgetProvider() {
 }
 
 internal object ContributionWidgetUpdater {
+    fun redrawStored(context: Context, appWidgetId: Int) = show(context, appWidgetId, WidgetPreferences.readStats(context, appWidgetId))
+
     fun refreshStored(context: Context, appWidgetId: Int): Result<ContributionStats> {
         val handle = WidgetPreferences.readHandle(context, appWidgetId)
         if (handle.isBlank()) return Result.success(emptyContributionStats()).also { show(context, appWidgetId) }
@@ -74,9 +78,11 @@ internal object ContributionWidgetUpdater {
     fun allWidgetIds(context: Context): IntArray = AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, ContributionWidgetProvider::class.java))
 
     private fun show(context: Context, appWidgetId: Int, stats: ContributionStats? = null) {
-        val options = renderOptions(context, appWidgetId)
+        val theme = WidgetPreferences.readTheme(context, appWidgetId)
+        val options = renderOptions(context, appWidgetId, theme)
         val bitmap = stats?.let { ContributionBitmapRenderer.render(it, options.graph) } ?: ContributionBitmapRenderer.placeholder(options.graph)
         AppWidgetManager.getInstance(context).updateAppWidget(appWidgetId, RemoteViews(context.packageName, R.layout.widget_contribution).apply {
+            setInt(R.id.widgetGraph, "setBackgroundResource", theme.backgroundResId)
             setImageViewBitmap(R.id.widgetGraph, bitmap)
             setViewPadding(R.id.widgetGraph, options.paddingPx, options.paddingPx, options.paddingPx, options.paddingPx)
             setOnClickPendingIntent(R.id.widgetRoot, settingsIntent(context, appWidgetId))
@@ -100,7 +106,7 @@ private fun settingsIntent(context: Context, appWidgetId: Int) = PendingIntent.g
 
 private data class WidgetRenderOptions(val graph: ContributionBitmapRenderer.RenderOptions, val paddingPx: Int)
 
-private fun renderOptions(context: Context, appWidgetId: Int): WidgetRenderOptions {
+private fun renderOptions(context: Context, appWidgetId: Int, theme: WidgetTheme): WidgetRenderOptions {
     val options = AppWidgetManager.getInstance(context).getAppWidgetOptions(appWidgetId)
     val density = context.resources.displayMetrics.density
     val widgetHeightDp = widgetHeightDp(
@@ -123,6 +129,8 @@ private fun renderOptions(context: Context, appWidgetId: Int): WidgetRenderOptio
             layout.weekBlocks,
             dp(context, layout.cellDp),
             dp(context, layout.gapDp),
+            theme.levelColors,
+            theme.borderColor,
         ),
         dp(context, paddingDp),
     )

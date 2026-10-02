@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">gc</string>
-    <string name="pin_widget">gc 고정</string>
-    <string name="widget_description">크기 조절 가능한 GitHub 기여 그래프</string>
-    <string name="widget_handle_hint">GitHub 핸들</string>
+    <string name="pin_widget">gc 위젯 추가</string>
+    <string name="widget_description">크기를 조절할 수 있는 GitHub 기여도 위젯</string>
+    <string name="widget_handle_hint">GitHub 사용자 이름</string>
     <string name="widget_save">저장</string>
-    <string name="widget_idle_status">저장해서 확인</string>
-    <string name="widget_empty_status">핸들을 입력하세요</string>
+    <string name="widget_theme_label">색상 테마</string>
+    <string name="widget_theme_light">GitHub 밝은 테마</string>
+    <string name="widget_theme_dark">GitHub 어두운 테마</string>
+    <string name="widget_theme_light_high_contrast">GitHub 밝은 테마 (고대비)</string>
+    <string name="widget_theme_dark_high_contrast">GitHub 어두운 테마 (고대비)</string>
+    <string name="widget_theme_dark_dimmed">GitHub 어두운 회색</string>
+    <string name="widget_theme_dark_dimmed_high_contrast">GitHub 어두운 회색 (고대비)</string>
+    <string name="widget_theme_halloween_light">할로윈 (밝게)</string>
+    <string name="widget_theme_halloween_dark">할로윈 (어둡게)</string>
+    <string name="widget_theme_winter_light">겨울 (밝게)</string>
+    <string name="widget_theme_winter_dark">겨울 (어둡게)</string>
+    <string name="widget_theme_transparent">투명 배경</string>
+    <string name="widget_idle_status">저장하여 확인</string>
+    <string name="widget_empty_status">사용자 이름을 입력하세요</string>
     <string name="widget_loading_status">새로고침 중...</string>
-    <string name="widget_handle_missing">찾을 수 없음</string>
-    <string name="widget_error_status">불러올 수 없음</string>
-    <string name="widget_graph_content_description">기여 그래프</string>
+    <string name="widget_handle_missing">사용자를 찾을 수 없습니다</string>
+    <string name="widget_error_status">불러오지 못했습니다</string>
+    <string name="widget_graph_content_description">기여도 그래프</string>
 </resources>

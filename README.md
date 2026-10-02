@@ -14,6 +14,9 @@
 ## Features
 
 - small size (<100 KiB release binary)
+- resizable home-screen widget
+- configurable color schemes: GitHub light/dark, high contrast, dark dimmed, Halloween and winter light/dark, and transparent background
+- theme changes apply immediately without saving or fetching contributions
 - simple codebase (<500 LoC)
 
 ## License
