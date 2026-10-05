@@ -1,5 +1,10 @@
 # Repository Rules
 
+## Deployment fixes
+
+- Preserve the Android CLI deployment path when fixing install recipes; do not replace it with adb without approval.
+- Verify installation on the target device; Android CLI error output can accompany a zero exit status.
+
 ## Widget layout changes
 
 - Before changing contribution widget layout, measure the reference and current screenshots: card bounds, grid bounds, U/D/L/R padding, square size, and gap.

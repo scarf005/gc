@@ -22,7 +22,7 @@ widget-previews:
     GC_WIDGET_PREVIEWS=1 GC_WIDGET_PREVIEW_OUT="$PWD/build/widget-previews" ./gradlew testDebugUnitTest --tests dev.scarf.gc.ContributionWidgetPreviewTest
 
 install-debug: debug
-    if command -v android >/dev/null; then android run --apks=app/build/outputs/apk/debug/app-debug.apk; else adb install -r app/build/outputs/apk/debug/app-debug.apk; fi
+    command -v android >/dev/null && android run --apks=app/build/outputs/apk/debug/app-debug.apk || adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 release:
     ./gradlew assembleRelease
@@ -113,4 +113,4 @@ sign-release: release
     "$SDK_ROOT/build-tools/36.0.0/apksigner" sign --ks ~/.config/.android/debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --out app/build/outputs/apk/release/app-release-signed.apk app/build/outputs/apk/release/app-release-aligned.apk
 
 install-release: sign-release
-    if command -v android >/dev/null; then android run --apks=app/build/outputs/apk/release/app-release-signed.apk; else adb install -r app/build/outputs/apk/release/app-release-signed.apk; fi
+    command -v android >/dev/null && android run --apks=app/build/outputs/apk/release/app-release-signed.apk || adb install -r app/build/outputs/apk/release/app-release-signed.apk

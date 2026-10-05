@@ -37,6 +37,8 @@ just install-release
 android docs search 'app widget debugging'
 ```
 
+If Android CLI reports no online devices while `adb devices -l` shows a connected device, run `android update` and retry. Older CLI versions can miss wireless device identifiers containing spaces.
+
 Project-local Android agent instructions live in `.skills/gc-android-workflow/SKILL.md`.
 
 ## Contribution palettes
