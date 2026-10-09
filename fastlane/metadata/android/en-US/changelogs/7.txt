@@ -1,0 +1,1 @@
+Add configurable widget color themes, stabilize the widget layout and improve refresh reliability. Add the app icon.
