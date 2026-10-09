@@ -1,1 +1,1 @@
-Update the app version to 0.1.1.
+Add the app icon to the store listing and update the build toolchain. App behavior is unchanged.
