@@ -22,6 +22,16 @@ just debug
 just release
 ```
 
+## Releases
+
+Tag the commit with `v<versionName>` from `app/build.gradle.kts`, or dispatch the Android workflow with that existing tag. Branch names and tags with a different version are rejected before signing.
+
+Every locale under `fastlane/metadata/android/` needs a nonempty `changelogs/<versionCode>.txt`. GitHub release notes use the English file. Reruns replace blank bodies or the exact `Release <tag>` placeholder and preserve other existing notes. Tooling and changelogs come from the workflow revision so manual dispatch can rebuild older tags.
+
+The workflow verifies the APK's application ID, versionCode, and versionName before signing and publication. Signing secrets are required only for releases.
+
+Check release tooling locally with `deno task test`, `deno fmt --check`, `deno lint scripts/`, and `deno check scripts/`. `@david/dax` handles commands; Valibot validates the stage and GitHub response. The workflow resolves `GIT_PATH` and `GH_PATH`, granting reads and execution only for those binaries and the SDK's `aapt`. Commands start with a cleared environment and retain `PATH`, `HOME`, `XDG_CONFIG_HOME`, and the GitHub token only when invoking `gh`. Deno's Node compatibility layer also needs `NODE_V8_COVERAGE` read permission. Subprocesses retain their normal filesystem and network access.
+
 ## Android CLI / adb workflow
 
 ```bash

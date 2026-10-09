@@ -23,11 +23,43 @@ jobs:
       HAS_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD != '' }}
       HAS_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS != '' }}
       HAS_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD != '' }}
+      RELEASE_TAG: ${{ inputs.release_tag || (startsWith(github.ref, 'refs/tags/v') && github.ref_name) || '' }}
 
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.release_tag || github.ref }}
+          ref: ${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
+
+      - name: Checkout release tooling
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: build/release-tooling
+
+      - uses: denoland/setup-deno@v2
+        with: { cache: true }
+
+      - name: Resolve release executable paths
+        run: |
+          echo "GIT_PATH=$(command -v git)" >> "$GITHUB_ENV"
+          echo "GH_PATH=$(command -v gh)" >> "$GITHUB_ENV"
+
+      - name: Check release tooling
+        working-directory: build/release-tooling
+        run: |
+          deno fmt --check
+          deno lint scripts/
+          deno check scripts/
+          deno task test
+
+      - name: Validate release metadata
+        id: release
+        run: >-
+          deno run --config=build/release-tooling/deno.json
+          --allow-read="app/build.gradle.kts,build/release-tooling/fastlane/metadata/android,$GIT_PATH"
+          --allow-write="build,$GITHUB_OUTPUT" --allow-run="$GIT_PATH"
+          --allow-env=PATH,HOME,XDG_CONFIG_HOME,GIT_PATH,NODE_V8_COVERAGE,RELEASE_TAG,GITHUB_OUTPUT
+          build/release-tooling/scripts/release.ts prepare
 
       - uses: actions/setup-java@v4
         with:
@@ -59,20 +91,14 @@ jobs:
           name: app-release-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
 
-      - name: Resolve release tag
-        id: release
-        run: |
-          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
-            tag="${{ github.event.inputs.release_tag }}"
-          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            tag="$GITHUB_REF_NAME"
-          else
-            tag=""
-          fi
-          version="${tag#v}"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "apk=app/build/outputs/apk/release/gc-$version.apk" >> "$GITHUB_OUTPUT"
+      - name: Verify release APK version
+        if: steps.release.outputs.tag != ''
+        run: >-
+          deno run --config=build/release-tooling/deno.json
+          --allow-read="app/build.gradle.kts,build/release-tooling/fastlane/metadata/android,$GIT_PATH,$ANDROID_HOME/build-tools/36.0.0/aapt"
+          --allow-run="$GIT_PATH,$ANDROID_HOME/build-tools/36.0.0/aapt"
+          --allow-env=PATH,HOME,XDG_CONFIG_HOME,GIT_PATH,NODE_V8_COVERAGE,RELEASE_TAG,ANDROID_HOME
+          build/release-tooling/scripts/release.ts verify
 
       - name: Check release signing secrets
         if: steps.release.outputs.tag != '' && (env.HAS_ANDROID_KEYSTORE_BASE64 != 'true' || env.HAS_ANDROID_KEYSTORE_PASSWORD != 'true' || env.HAS_ANDROID_KEY_ALIAS != 'true' || env.HAS_ANDROID_KEY_PASSWORD != 'true')
@@ -87,10 +113,13 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_APK: ${{ steps.release.outputs.apk }}
         run: |
           keystore="$RUNNER_TEMP/release.jks"
-          aligned="app/build/outputs/apk/release/gc-${{ steps.release.outputs.version }}-aligned.apk"
-          signed="${{ steps.release.outputs.apk }}"
+          trap 'rm -f "$keystore"' EXIT
+          aligned="app/build/outputs/apk/release/gc-$RELEASE_VERSION-aligned.apk"
+          signed="$RELEASE_APK"
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk "$aligned"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign \
@@ -114,12 +143,9 @@ jobs:
         if: steps.release.outputs.tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          tag="${{ steps.release.outputs.tag }}"
-          apk="${{ steps.release.outputs.apk }}"
-          name="gc-${{ steps.release.outputs.version }}.apk"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" "$apk#$name" --clobber
-          else
-            gh release create "$tag" "$apk#$name" --title "$tag" --notes "Release $tag"
-          fi
+        run: >-
+          deno run --config=build/release-tooling/deno.json
+          --allow-read="app/build.gradle.kts,build/release-tooling/fastlane/metadata/android,$GIT_PATH,$GH_PATH,$ANDROID_HOME/build-tools/36.0.0/aapt"
+          --allow-run="$GIT_PATH,$GH_PATH,$ANDROID_HOME/build-tools/36.0.0/aapt"
+          --allow-env=PATH,HOME,XDG_CONFIG_HOME,GIT_PATH,GH_PATH,GH_TOKEN,NODE_V8_COVERAGE,RELEASE_TAG,ANDROID_HOME,GITHUB_REPOSITORY
+          build/release-tooling/scripts/release.ts publish

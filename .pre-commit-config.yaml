@@ -1,0 +1,33 @@
+repos:
+  - repo: local
+    hooks:
+      - id: release-format
+        name: release format
+        entry: deno fmt --check
+        language: system
+        files: '^(scripts/.*\.ts|deno\.json)$'
+        pass_filenames: false
+      - id: release-lint
+        name: release lint
+        entry: deno lint scripts/
+        language: system
+        files: '^scripts/.*\.ts$'
+        pass_filenames: false
+      - id: release-types
+        name: release types
+        entry: deno check scripts/
+        language: system
+        files: '^(scripts/.*\.ts|deno\.(json|lock))$'
+        pass_filenames: false
+      - id: release-tests
+        name: release tests
+        entry: deno task test
+        language: system
+        files: '^(scripts/|deno\.|fastlane/metadata/android/|app/build\.gradle\.kts)'
+        pass_filenames: false
+      - id: android-workflow
+        name: Android workflow
+        entry: actionlint .github/workflows/android.yml
+        language: system
+        files: '^\.github/workflows/.*\.yml$'
+        pass_filenames: false
