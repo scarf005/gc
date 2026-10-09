@@ -15,7 +15,7 @@ repos:
         pass_filenames: false
       - id: release-types
         name: release types
-        entry: deno check scripts/release.ts scripts/release_test.ts
+        entry: deno check scripts/
         language: system
         files: '^(scripts/.*\.ts|deno\.(json|lock))$'
         pass_filenames: false

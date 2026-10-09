@@ -49,7 +49,7 @@ jobs:
         run: |
           deno fmt --check
           deno lint scripts/
-          deno check scripts/*.ts
+          deno check scripts/
           deno task test
 
       - name: Validate release metadata

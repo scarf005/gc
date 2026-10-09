@@ -30,7 +30,7 @@ Every locale under `fastlane/metadata/android/` needs a nonempty `changelogs/<ve
 
 The workflow verifies the APK's application ID, versionCode, and versionName before signing and publication. Signing secrets are required only for releases.
 
-Check release tooling locally with `deno task test`, `deno fmt --check`, `deno lint scripts/`, and `deno check scripts/*.ts`. `@david/dax` handles commands; Valibot validates the stage and GitHub response. The workflow resolves `GIT_PATH` and `GH_PATH`, granting reads and execution only for those binaries and the SDK's `aapt`. Commands start with a cleared environment and retain `PATH`, `HOME`, `XDG_CONFIG_HOME`, and the GitHub token only when invoking `gh`. Deno's Node compatibility layer also needs `NODE_V8_COVERAGE` read permission. Subprocesses retain their normal filesystem and network access.
+Check release tooling locally with `deno task test`, `deno fmt --check`, `deno lint scripts/`, and `deno check scripts/`. `@david/dax` handles commands; Valibot validates the stage and GitHub response. The workflow resolves `GIT_PATH` and `GH_PATH`, granting reads and execution only for those binaries and the SDK's `aapt`. Commands start with a cleared environment and retain `PATH`, `HOME`, `XDG_CONFIG_HOME`, and the GitHub token only when invoking `gh`. Deno's Node compatibility layer also needs `NODE_V8_COVERAGE` read permission. Subprocesses retain their normal filesystem and network access.
 
 ## Android CLI / adb workflow
 
